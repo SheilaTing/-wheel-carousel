@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carousel 走马灯（轮播图）</title>
+</head>
+<style>
+    .container {
+        width: 800px;
+        margin: 30px auto;
+        padding: 30px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        /* box-shadow: 5px 5px 5px #ccc; */
+    }
+
+    .carousel {
+        position: relative;
+        /* height:200px; */
+        height: 200px;
+    }
+
+    .carousel .pannels a {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+        opacity: 0;
+        transition: all .3s;
+    }
+
+    .carousel .pannels a.active {
+        opacity: 1;
+    }
+
+    .carousel .pannels a:nth-child(odd) {
+        background: pink;
+    }
+
+    .carousel .pannels a:nth-child(even) {
+        background: lightskyblue;
+    }
+
+    .arrow {
+        position: absolute;
+        top: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        border: none;
+        background: rgba(31, 45, 61, .11);
+        outline: none;
+        cursor: pointer;
+        transform: translateY(-50%);
+        opacity: 0;
+    }
+
+    .pre-arrow {
+        left: 10px;
+        transform: translateX(-10px) translateY(-50%);
+    }
+
+    .carousel:hover .pre-arrow {
+        transform: translateX(0) translateY(-50%);
+        opacity: 1;
+    }
+
+    .next-arrow {
+        right: 10px;
+        transform: translateX(10px) translateY(-50%);
+    }
+    .carousel:hover .next-arrow {
+      transform: translateX(0) translateY(-50%);
+      opacity: 1;
+    }
+
+    .arrow::before {
+        content: '';
+        display: block;
+        width: 10px;
+        height: 10px;
+        border-left: 1px solid #fff;
+        border-top: 1px solid #fff;
+    }
+
+    .pre-arrow::before {
+        transform: rotate(-45deg)
+    }
+
+    .next-arrow::before {
+        transform: rotate(135deg)
+    }
+
+    .indicators {
+        position: absolute;
+        list-style-type: none;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .indicators li {
+        display: inline-block;
+        padding: 5px 0;
+        cursor: pointer;
+        /* border:1px solid; */
+    }
+
+    .indicators li.active::before {
+        background: #fff;
+    }
+
+    .indicators li::before {
+        content: '';
+        display: block;
+        width: 30px;
+        height: 2px;
+        border-radius: 2px;
+        background: #c0c4cc;
+        transition: all .3s;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <h2>Carousel</h2>
+        <div class="carousel">
+            <div class="pannels">
+                <a class="active" href="#1">0</a>
+                <a href="#2">1</a>
+                <a href="#3">2</a>
+                <a href="#4">3</a>
+            </div>
+            <div class="arrows">
+                <button class="arrow pre-arrow"></button>
+                <button class="arrow next-arrow"></button>
+            </div>
+            <ul class="indicators">
+                <li class="active"></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+        </div>
+    </div>
+</body>
+<script>
+    // 分析
+    //初始化
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+    //获取点击的箭头
+    let preArrow = $('.pre-arrow');
+    let nextArrow = $('.next-arrow');
+    let indicators = $$('.indicators li');
+    let pannels = $$('.pannels a');
+    //获取当前页,也就是当前有active的对象(注意是对象)
+    const getIndex = () => [...indicators].indexOf($('.indicators .active'))
+    //获取前一页 当前页减去1，但如果当前页的下标是0，那么0-1=-1，数组没有负数下标
+    //正常下标应该是最后一个也就是3，所以我们加上数组的长度
+    //但如果当前页的下标是3最后一个，那么3-1+4=6，超出了数组的长度4，所以我们用这个数与数组长度取余数，余数总是小于4的
+    const getPreIndex = () => (getIndex() - 1 + [...indicators].length) % [...indicators].length;
+    //获取下一页的下标
+    //下一页没有会是负数的情况，所以我们只考虑下标超出的情况，只去余数就可以了
+    const getNextIndex = () => (getIndex() + 1) % indicators.length
+    //设置显示的pannel下标
+    const setPage = index => {
+        //让所有标签页隐藏
+        pannels.forEach(pannel => pannel.classList.remove('active'));
+        //显示传递来的下标页面
+        pannels[index].classList.add('active');
+    }
+    //设置指示器下标
+    const setIndicator = index => {
+        indicators.forEach(item => item.classList.remove('active'));
+        indicators[index].classList.add('active');
+    }
+
+
+    //绑定事件
+    preArrow.onclick = function () {
+        //获取上一页的下标
+        let index = getPreIndex();
+        //设置显示页的样式
+        setPage(index);
+        setIndicator(index);
+    }
+
+    nextArrow.onclick = function () {
+        let index = getNextIndex();
+        setPage(index);
+        setIndicator(index);
+    }
+    indicators.forEach(item => item.onclick = function (e) {
+        //点击指示器，获取当前点击的对象的下标
+        let index = [...indicators].indexOf(e.target);
+        setPage(index);
+        setIndicator(index);
+    })
+
+
+</script>
+
+</html>
