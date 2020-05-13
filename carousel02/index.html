@@ -355,9 +355,9 @@
     let carousel = new Carousel(root, Animation.zoom);
 
 
-    let effect = document.querySelector('.select').value;
+    let effect = document.querySelector('.select');
     effect.onchange = function () {
-        carousel.setAnimation(Animation[effect])
+        carousel.setAnimation(Animation[effect.value])
     }
 
     //这样写更省代码
