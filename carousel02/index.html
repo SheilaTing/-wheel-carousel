@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carousel 02</title>
+</head>
+<style>
+    .container {
+        width: 800px;
+        margin: 50px auto;
+        padding: 30px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .carousel {
+        position: relative;
+        width: 800px;
+        height: 200px;
+        border: 1px solid;
+        /* 隐藏给它定位的溢出部分 */
+        overflow: hidden;
+    }
+
+    /* .carousel .pannels {
+        width: 100%;
+        height: 100%;
+    } */
+
+    .carousel .pannels a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        text-decoration: none;
+        /* opacity: 0; */
+        z-index: 1;
+    }
+
+    .carousel .pannels a.active {
+        z-index: 10;
+    }
+
+    .carousel .pannels a:nth-child(odd) {
+        background: pink;
+    }
+
+    .carousel .pannels a:nth-child(even) {
+        background: blueviolet;
+    }
+
+    .carousel .arrows button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(31, 45, 61, .11);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: all .3s;
+        outline: none;
+        cursor: pointer;
+        z-index: 100;
+    }
+
+    .carousel .arrows button::before {
+        content: '';
+        display: block;
+        width: 10px;
+        height: 10px;
+        border-top: 1px solid #fff;
+        border-right: 1px solid #fff;
+        transform: rotate(-135deg);
+    }
+
+    .carousel .arrows .next-arrow::before {
+        transform: rotate(45deg);
+    }
+
+    .carousel .arrows .pre-arrow {
+        left: 10px;
+    }
+
+    .carousel .arrows .next-arrow {
+        right: 10px;
+    }
+
+    .carousel:hover .arrows button {
+        opacity: 1;
+    }
+
+    .indicators {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        list-style: none;
+        z-index: 100;
+    }
+
+    .indicators li {
+        width: 30px;
+        height: 5px;
+        border: 1px solid;
+        display: inline-block;
+        background: #c0c4cc;
+    }
+
+    .indicators li.active {
+        background-color: #fff;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <h2>Carousel</h2>
+        <select class="select">
+            <option value="slide">slide</option>
+            <option value="fade">fade</option>
+            <option value="zoom">zoom</option>
+        </select>
+        <div class="carousel">
+            <div class="pannels">
+                <a class="active" href="#0">0</a>
+                <a href="#1">1</a>
+                <a href="#2">2</a>
+                <a href="#3">3</a>
+            </div>
+            <div class="arrows">
+                <button class="pre-arrow"></button>
+                <button class="next-arrow"></button>
+            </div>
+            <ul class="indicators">
+                <li class="active"></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+        </div>
+    </div>
+</body>
+<script>
+    //为了免去，频繁设置 style的情况，我们把给元素设置style 封装成一个方法
+    const css = (node, cssObj) => Object.assign(node.style, cssObj);
+    //假设这个动画已经写好了
+    //分析， 我们要实现的效果，需要操作两个dom元素的css，所以要接受这两个参数
+    //再加上页面滑动的方向
+    const Animation = {
+        slide(from, to, direction) {
+            //判断方向，因为方向不同，效果不同
+            //初始化元素的样式,因为后面操作后，样式变了；
+            from.style = '';
+            to.style = '';
+            //初始化元素的摆放位置，然后在这个位置基础上做css偏移
+            //from dom 一开始在自己的位置，to 则在from的右边
+            //为了免去，频繁设置 style的情况，我们把给元素设置style 封装成一个方法
+            //使用z-index控制页面的展示
+            css(from, {
+                transform: `translateX(0)`,
+                zIndex: 10
+            });
+            css(to, {
+                transform: `translateX(${direction === 'right' ? '-' : ''}100%)`,
+                zIndex: 10
+            })
+            //设置新的样式
+            setTimeout(() => {
+                css(from, {
+                    transform: `translateX(${direction === 'left' ? '-' : ''}100%)`,
+                    opacity: '0',
+                    transition: `all 1s`
+                })
+                css(to, {
+                    transform: `translateX(0)`,
+                    opacity: '1',
+                    transition: `all 1s`
+                })
+            }, 0);
+
+            // else if(direction === 'right'){
+            //     //内容差不多，也是初始化，初始化元素位置，再设置css.不同的只是 translate 100 的正负，
+            //     //而这个值是由方向决定的，如果方向向左，to元素偏移100，否则偏移-100；其他都相同，所以我们可以直接判断，省去else
+            // }
+        },
+        fade(from, to) {
+            from.style = '';
+            to.style = '';
+            //初始化样式,刚开始肯定from在 to的上方
+            css(from, {
+                opacity: `1`,
+                zIndex: `10`
+            })
+            css(to, {
+                opacity: '0',
+                zIndex: '9'
+            })
+            setTimeout(() => {
+                css(from, {
+                    opacity: `0`,
+                    zIndex: `10`,
+                    transition: `all,.4s`
+                })
+                css(to, {
+                    opacity: '1',
+                    zIndex: '10',
+                    transition: `all,.4s`
+                })
+            }, 0);
+            // 分开设置透明度和zindex，先改变透明度，再改变z-index,
+            // 注意如果不改变index，只改变透明度，用户看到的是新的标签页，但会导致用户点击的还是原来的那个标签页面
+            //怕过度效果太快，动画来不及执行，其实我没看出差别哈哈哈哈
+
+            setTimeout(() => {
+                css(from, {
+                    // opacity: `0`,
+                    zIndex: `1`,
+                    // transition: `all,.4s`
+                })
+                css(to, {
+                    // opacity: '1',
+                    zIndex: '10',
+                    // transition: `all,.4s`
+                })
+            }, 400);
+
+        },
+        //元素先放大，再消失
+        zoom(from, to) {
+            from.style = '';
+            to.style = '';
+            //初始化两个元素大小
+            css(from, {
+                transform: `scale(1)`,
+                opacity: '1',
+                zIndex: 10
+            })
+            css(to, {
+                transform: `scale(10)`,
+                opacity: '0',
+                zIndex: 9
+            })
+            //先使消失元素先变大，并改变它的透明度使他消失
+            setTimeout(() => {
+                css(from, {
+                    transform: `scale(10)`,
+                    opacity: 0,
+                    zIndex: 10,
+                    transition: `all .4s`
+                })
+                css(to, {
+                    opacity: 1,
+                    transform: `scale(1)`,
+                    zIndex: 9,
+                    transition: `all .4s`
+                })
+            }, 0);
+            //等特效执行完成，改变堆叠顺序（其实放在上一步，也没啥问题哎）
+            setTimeout(() => {
+                css(from, {
+                    zIndex: 9
+                })
+                css(to, {
+                    zIndex: 10
+                })
+            }, 400);
+
+        }
+    }
+    class Carousel {
+        constructor(root, animation) {
+            this.root = root;
+            //从传递来的根节点中查找我们要操作的对象
+            this.preBtn = root.querySelector('.pre-arrow');
+            this.nextBtn = root.querySelector('.next-arrow');
+            this.indicators = root.querySelectorAll('.indicators li');
+            this.pannels = root.querySelectorAll('.pannels a');
+            this.animation = animation;
+            this.bind();
+        }
+        bind() {
+            this.preBtn.onclick = () => {
+                let fromIndex = this.getIndex();
+                //点击前一个按钮，需要设置要展示页码的前一个下标,此时，toindex下标就是前一个下标
+                let toIndex = this.getPreIndex();
+                //将要展示的下标设置到setPage中,上一页，页面向右滑动
+                this.setPage(fromIndex, toIndex, 'right');
+                this.setIndicators(toIndex);
+            }
+            this.nextBtn.onclick = () => {
+                let toIndex = this.getNextIndex();
+                //将要展示的下标设置到setPage中，点下一页，页面向左滑动
+                this.setPage(this.getIndex(), toIndex, 'left');
+                this.setIndicators(toIndex);
+            }
+            this.indicators.forEach(item => item.onclick = (e) => {
+                let fromIndex = this.getIndex();
+                //获取当前点击的对象的下标,也就是即将要展示的页面的下标
+                let toIndex = [...this.indicators].indexOf(e.target);
+                //判断方向
+                let direction = fromIndex > toIndex ? 'right' : 'left';
+                this.setPage(fromIndex, toIndex, direction);
+                this.setIndicators(toIndex);
+            })
+        }
+        getIndex() {
+            //获取当前显示的页面下标,根据indicators 当前有active的css判断
+            return [...this.indicators].indexOf(this.root.querySelector('li.active'));
+        }
+        getPreIndex() {
+            let index = this.getIndex();
+            //需要考虑负数和数组越界的问题
+            return (index - 1 + this.indicators.length) % this.indicators.length
+        }
+        getNextIndex() {
+            let index = this.getIndex();
+            return (index + 1) % this.indicators.length;
+        }
+        setIndicators(index) {
+            //设置指示器的样式
+            this.indicators.forEach(item => {
+                item.classList.remove('active');
+            })
+            this.indicators[index].classList.add('active');
+        }
+        setPage(fromIndex, toIndex, direction) {
+            // this.pannels.forEach(item => {
+            //     item.classList.remove('active');
+            // })
+            // this.pannels[index].classList.add('active');
+
+            //此时已经有了动画Animation 对象，直接调用,传递过去我们要设置css的两个元素过去
+            //如果此时写死只调用slide() 风格，就不能灵活调用了，最好是传递过来
+            // Animation.slide();
+            //此时调用这个函数
+            //传递dom
+            // console.log(fromIndex+"\n"+toIndex+"\n"+direction)
+            this.animation(this.pannels[fromIndex], this.pannels[toIndex], direction);
+        }
+        setAnimation(animation) {
+            this.animation = animation;
+        }
+    }
+
+    let root = document.querySelector('.carousel')
+    let carousel = new Carousel(root, Animation.zoom);
+
+
+    let effect = document.querySelector('.select').value;
+    effect.onchange = function () {
+        carousel.setAnimation(Animation[effect])
+    }
+
+    //这样写更省代码
+    // document.querySelector('#animation-select').onchange = function() {
+    //   carousel.setAnimation(Animation[this.value])
+    // }
+</script>
+
+</html>
